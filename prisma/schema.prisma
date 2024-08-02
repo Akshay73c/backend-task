@@ -12,3 +12,60 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  status      Boolean   @default(true)
+  Product     Product[]
+}
+
+model Product {
+  id            Int      @id @default(autoincrement())
+  name          String   @unique
+  price         Int
+  description   String?
+  image         String?
+  specification String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  Order         Order[]
+  category      Category @relation(fields: [categoryId], references: [id])
+  categoryId    Int
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  firstName String?
+  Lastname  String?
+  addresses Address[]
+  orders    Order[]
+}
+
+model Order {
+  id          Int      @id @default(autoincrement())
+  description String?
+  type        String   @default("COD")
+  product     Product  @relation(fields: [productId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+  address     Address  @relation(fields: [addressId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  productId   Int
+  userId      Int
+  addressId   Int
+}
+
+model Address {
+  id      Int     @id @default(autoincrement())
+  street  String?
+  city    String
+  state   String
+  country String
+  user    User    @relation(fields: [userId], references: [id])
+  userId  Int
+  orders  Order[]
+}
