@@ -13,15 +13,19 @@ categoryRouter.post("/", async (req, res) => {
   }
   const { name, description, status }: categoryDataType = parsedBody.data;
 
-  const category = await prisma.category.create({
-    data: {
-      name,
-      description,
-      status,
-    },
-  });
+  try {
+    const category = await prisma.category.create({
+      data: {
+        name,
+        description,
+        status,
+      },
+    });
 
-  res.json({ message: category });
+    res.json({ message: category });
+  } catch (error) {
+    res.json(error);
+  }
 });
 
 categoryRouter.put("/:categoryId", async (req, res) => {
@@ -33,51 +37,78 @@ categoryRouter.put("/:categoryId", async (req, res) => {
   }
   const { name, description, status }: categoryDataType = parsedBody.data;
 
-  const updatedCategory = await prisma.category.update({
-    where: { id },
-    data: { name, description, status },
-  });
+  try {
+    const updatedCategory = await prisma.category.update({
+      where: { id },
+      data: { name, description, status },
+    });
 
-  res.json({ message: updatedCategory });
+    res.json({ message: updatedCategory });
+  } catch (error) {
+    res.json(error);
+  }
 });
 
 categoryRouter.get("/", async (req, res) => {
-  const catgories = await prisma.category.findMany({
-    where: {
-      status: true,
-    },
-    select: {
-      name: true,
-      description: true,
-      Product: {
-        select: {
-          name: true,
-          price: true,
+  try {
+    const catgories = await prisma.category.findMany({
+      where: {
+        status: true,
+      },
+      select: {
+        name: true,
+        description: true,
+        Product: {
+          select: {
+            name: true,
+            price: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  res.json({ catgories });
+    res.json({ catgories });
+  } catch (error) {
+    res.json(error);
+  }
 });
 
 categoryRouter.get("/:categoryId", async (req, res) => {
   const id = Number(req.params.categoryId);
-  const category = await prisma.category.findUnique({
-    where: {
-      id,
-    },
-    select: {
-      name: true,
-      description: true,
-      status: true,
-      Product: {
-        select: {
-          name: true,
-          price: true,
+  try {
+    const category = await prisma.category.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        name: true,
+        description: true,
+        status: true,
+        Product: {
+          select: {
+            name: true,
+            price: true,
+          },
         },
       },
-    },
-  });
-  res.json(category);
+    });
+    res.json(category);
+  } catch (error) {
+    res.json(error);
+  }
+});
+
+categoryRouter.delete("/:categoryId", async (req, res) => {
+  try {
+    const id = Number(req.params.categoryId);
+    const deletedCategory = await prisma.category.delete({
+      where: {
+        id,
+      },
+    });
+
+    res.json({ deletedProduct: deletedCategory });
+  } catch (error) {
+    res.json({ error: error });
+  }
 });

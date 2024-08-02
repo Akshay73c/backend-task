@@ -1,28 +1,32 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { orderData } from "../zodTypes/zodIndex";
+import { authMiddleware } from "../authMiddleware";
 
 const prisma = new PrismaClient();
 
 export const orderRouter = express.Router();
 
-orderRouter.post("/", async (req, res) => {
+orderRouter.post("/", authMiddleware, async (req, res) => {
   const parsedBody = orderData.safeParse(req.body);
   if (!parsedBody.success) {
     return res.json({ message: "Wrong input types" });
   }
   const { productId, userId, addressId, description } = parsedBody.data;
+  try {
+    const order = await prisma.order.create({
+      data: {
+        productId,
+        userId,
+        addressId,
+        description,
+      },
+    });
 
-  const order = await prisma.order.create({
-    data: {
-      productId,
-      userId,
-      addressId,
-      description,
-    },
-  });
-
-  res.json({ message: order });
+    res.json({ message: order });
+  } catch (error) {
+    res.json(error);
+  }
 });
 
 orderRouter.put("/:orderId", async (req, res) => {
@@ -34,26 +38,37 @@ orderRouter.put("/:orderId", async (req, res) => {
   }
   const { productId, userId, addressId, description } = parsedBody.data;
 
-  const updatedOrder = await prisma.order.update({
-    where: { id },
-    data: { productId, userId, addressId, description },
-  });
+  try {
+    const updatedOrder = await prisma.order.update({
+      where: { id },
+      data: { productId, userId, addressId, description },
+    });
 
-  res.json({ message: updatedOrder });
+    res.json({ message: updatedOrder });
+  } catch (error) {
+    res.json(error);
+  }
 });
 
 orderRouter.get("/", async (req, res) => {
-  const orders = await prisma.order.findMany();
-
-  res.json({ orders });
+  try {
+    const orders = await prisma.order.findMany();
+    res.json({ orders });
+  } catch (error) {
+    res.json(error);
+  }
 });
 
 orderRouter.get("/:orderId", async (req, res) => {
   const id = Number(req.params.orderId);
-  const order = await prisma.order.findUnique({
-    where: {
-      id,
-    },
-  });
-  res.json(order);
+  try {
+    const order = await prisma.order.findUnique({
+      where: {
+        id,
+      },
+    });
+    res.json(order);
+  } catch (error) {
+    res.json(error);
+  }
 });

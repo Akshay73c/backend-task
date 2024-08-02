@@ -14,18 +14,22 @@ productRouter.post("/", async (req, res) => {
   const { name, price, description, image, specification, categoryId } =
     parsedBody.data;
 
-  const product = await prisma.product.create({
-    data: {
-      name,
-      price,
-      description,
-      image,
-      specification,
-      categoryId,
-    },
-  });
+  try {
+    const product = await prisma.product.create({
+      data: {
+        name,
+        price,
+        description,
+        image,
+        specification,
+        categoryId,
+      },
+    });
 
-  res.json({ message: product });
+    res.json({ message: product });
+  } catch (error) {
+    res.json(error);
+  }
 });
 
 productRouter.put("/:productId", async (req, res) => {
@@ -36,49 +40,60 @@ productRouter.put("/:productId", async (req, res) => {
     return res.json({ message: "Wrong input types" });
   }
   const { name, price, description, image, specification } = parsedBody.data;
+  try {
+    const updatedProduct = await prisma.product.update({
+      where: { id },
+      data: {
+        name,
+        price,
+        description,
+        image,
+        specification,
+      },
+    });
 
-  const updatedProduct = await prisma.product.update({
-    where: { id },
-    data: {
-      name,
-      price,
-      description,
-      image,
-      specification,
-    },
-  });
-
-  res.json({ message: updatedProduct });
+    res.json({ message: updatedProduct });
+  } catch (error) {
+    res.json(error);
+  }
 });
 
 productRouter.get("/", async (req, res) => {
-  const products = await prisma.product.findMany();
-  res.json({ products });
+  try {
+    const products = await prisma.product.findMany();
+    res.json({ products });
+  } catch (error) {
+    res.json(error);
+  }
 });
 
 productRouter.get("/:productId", async (req, res) => {
   const id = Number(req.params.productId);
-  const product = await prisma.product.findUnique({
-    where: {
-      id,
-    },
-    select: {
-      name: true,
-      price: true,
-      description: true,
-      image: true,
-      specification: true,
-      createdAt: true,
-      updatedAt: true,
-      category: {
-        select: {
-          name: true,
-          description: true,
+  try {
+    const product = await prisma.product.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        name: true,
+        price: true,
+        description: true,
+        image: true,
+        specification: true,
+        createdAt: true,
+        updatedAt: true,
+        category: {
+          select: {
+            name: true,
+            description: true,
+          },
         },
       },
-    },
-  });
-  res.json(product);
+    });
+    res.json(product);
+  } catch (error) {
+    res.json(error);
+  }
 });
 
 productRouter.delete("/:productId", async (req, res) => {
